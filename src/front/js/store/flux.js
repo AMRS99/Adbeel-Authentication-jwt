@@ -1,19 +1,11 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			token: null,
+			loginMSG: null,
+			signUpMSG: null,
+			isloginSuccessful: false,
+			isSignUpSuccessful: false
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -33,19 +25,81 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+			
+			login: async(email,password) => {
+				const options = {
+					method:"POST",
+					mode:'cors',
+					headers:{
+						'Content-Type':'application/json'
+					},
+					body: JSON.stringify({
+						email:email,
+						password:password
+					})
+				}
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
 
-				//reset the global store
-				setStore({ demo: demo });
+				const response = await fetch("https://ideal-space-invention-v6grj9g6xxgpc694r-3001.app.github.dev/api/token", options)
+				if(!response.ok){
+					console.log("Error:",response.statusText,response.status)
+					return false;
+				}
+				const data = await response.json();
+				console.log('this came from the backend',data);
+				sessionStorage.setItem("token", data.access_token)
+				setStore({
+					token:data.access_token,
+					loginMSG: data.msg,
+					isloginSuccessful: true
+				})
+				return true;
+			},
+
+			signUp: async (email,password) =>{
+				const options={
+					method:"POST",
+					mode:'cors',
+					headers:{
+						'Content-Type':'application/json'
+					},
+					body: JSON.stringify({
+						email:email,
+						password:password
+					})
+				}
+				const response = await fetch("https://ideal-space-invention-v6grj9g6xxgpc694r-3001.app.github.dev/api/signup", options)
+				if(!response.ok){
+					const data = await response.json()
+					return {
+						error:{
+							status: response.status,
+							statusText:response.statusText,
+							signUpMSG:data.msg
+						}
+					}
+				}
+				const data = await response.json()
+				setStore({
+					signUpMSG: data.msg,
+					isSignUpSuccessful: true
+				})
+				return data
+			},
+			synSessionTokenFromStore:() => {
+				const sessionToken= sessionStorage.getItem("token");
+				if(sessionToken && sessionToken!="" && sessionToken != undefined){
+					setStore({token:sessionToken})
+				}
+			},
+			logout:() => {
+				sessionStorage.removeItem("token")
+				setStore({
+					token: null,
+					loginMSG: null,
+					signUpMSG: null,
+					isloginSuccessful: false
+				})
 			}
 		}
 	};
