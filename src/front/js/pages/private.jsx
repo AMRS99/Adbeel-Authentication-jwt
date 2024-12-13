@@ -11,7 +11,9 @@ const Private = () =>{
     useEffect(()=>{
         if(store.token && store.token!="" && store.token != undefined)
             navigate("/private")
-        navigate("/login")
+        else{
+            navigate("/login")
+        }
     },[store.token])
 
     return(

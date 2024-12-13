@@ -16,9 +16,9 @@ const Login = () =>{
     }
 
     useEffect(()=>{
-        if(store.isLoginSuccessful)
+        if(store.isloginSuccessful)
             navigate("/private")
-    },[store.isLoginSuccessful])
+    },[store.isloginSuccessful])
 
     return(
         <>
